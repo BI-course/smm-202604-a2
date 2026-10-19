@@ -64,7 +64,7 @@ with tab_regression:
         # OrdinalEncoder was fitted on.
         owner_education_level = st.selectbox(
             "Owner Education Level",
-            ["Primary", "Secondary", "Tertiary", "Postgraduate"], index=1)
+            ["Primary", "Secondary", "Certificate", "Bachelors", "Masters", "Doctorate"], index=1)
         monthly_marketing_spend_kes = st.number_input("Monthly Marketing Spend (KES)", value=45000)
         avg_daily_foot_traffic = st.number_input(
             "Avg Daily Foot Traffic (leave 0 if not applicable)", value=0)
