@@ -6,7 +6,7 @@ produced in earlier labs:
 
     1. Regression       -- SME monthly revenue prediction
     2. Classification   -- SME credit risk category
-    3. Clustering       -- Mall customer segment assignment
+    3. Clustering       -- Retail store segment assignment
     4. Association Rule -- Product recommendation from a cart
        Mining (ARM)
 
@@ -86,10 +86,20 @@ classification_pipeline = joblib.load(
 
 
 clustering_artifact = joblib.load(
-    os.path.join(MODEL_DIR, "kmeans_mall_customer_segmentation.joblib")
+    os.path.join(MODEL_DIR, "kmeans_retail_store_segmentation.joblib")
 )
+
+clustering_imputer = clustering_artifact["imputer"]
 clustering_scaler = clustering_artifact["scaler"]
 clustering_kmeans = clustering_artifact["kmeans"]
+
+clustering_features = [
+    "monthly_revenue_kes",
+    "daily_foot_traffic",
+    "staff_count",
+    "store_size_sqm",
+    "avg_basket_size_kes"
+]
 
 arm_artifact = joblib.load(
     os.path.join(MODEL_DIR, "apriori_recommendation_rules.joblib")
@@ -188,32 +198,56 @@ def predict_employee_attrition():
     })
 
 
-# 3. CLUSTERING -- assign a new mall customer to an existing segment
-
-# Sample request (cURL):
-#   curl -X POST http://127.0.0.1:5000/api/v1/models/mall-customer-segmenter/predictions \
-#        -H "Content-Type: application/json" \
-#        -d '{"Age": 27, "Annual Income (k$)": 45, "Spending Score (1-100)": 72}'
+# 3. CLUSTERING -- assign a new retail store to an existing segment
 #
-# Note: unlike the two Pipelines above, K-Means does not bundle its own
-# scaler, so this is the one endpoint where the scaling step is applied
-# explicitly (scaler.transform(...) then kmeans.predict(...)) -- exactly the
-# two-object pattern the clustering notebook persisted together for this
-# reason. There is still no manual encoding or feature engineering: the
-# three numeric fields are used exactly as the client sends them.
-@app.route("/api/v1/models/mall-customer-segmenter/predictions", methods=["POST"])
-def predict_customer_segment():
-    payload = request.get_json()
-    input_row = pd.DataFrame([payload])
+#  Sample request (cURL):
+#    curl -X POST http://127.0.0.1:5000/api/v1/models/retail-store-segmenter/predictions \
+#         -H "Content-Type: application/json" \
+#         -d '{"monthly_revenue_kes": 620000, "daily_foot_traffic": 610, "staff_count": 7, "store_size_sqm": 210, "avg_basket_size_kes": 55}'
+#
+#  The imputer handles missing values, the scaler standardizes the
+#  five numeric features, and K-Means assigns the store to a cluster.
+#  These are the same preprocessing and clustering objects saved
+# together in the Retail Store Segmentation notebook.
 
-    scaled_input = clustering_scaler.transform(input_row)
-    assigned_cluster = int(clustering_kmeans.predict(scaled_input)[0])
+@app.route("/api/v1/models/retail-store-segmenter/predictions", methods=["POST"])
+def predict_store_segment():
+     payload = request.get_json(silent=True)
 
-    return jsonify({
-        "assigned_cluster": assigned_cluster,
-        "model": "K-Means (k=5, standardized features)",
-    })
+     if not isinstance(payload, dict):
+         return jsonify({"error": "Send store details as a JSON object."}), 400
 
+     missing_features = [
+         feature for feature in clustering_features
+         if feature not in payload
+     ]
+
+     if missing_features:
+         return jsonify({
+             "error": "Missing required features.",
+             "missing_features": missing_features
+         }), 400
+
+     try:
+         input_row = pd.DataFrame(
+             [[payload[feature] for feature in clustering_features]],
+             columns=clustering_features
+         )
+
+         imputed_input = clustering_imputer.transform(input_row)
+         scaled_input = clustering_scaler.transform(imputed_input)
+
+         assigned_cluster = int(
+             clustering_kmeans.predict(scaled_input)[0]
+         )
+
+     except (ValueError, TypeError) as error:
+         return jsonify({"error": f"Invalid input: {error}"}), 400
+
+     return jsonify({
+         "assigned_cluster": assigned_cluster,
+         "model": "K-Means Retail Store Segmentation (k=5)"
+     })
 
 # 4. ASSOCIATION RULE MINING -- recommend products for a shopping cart
 
