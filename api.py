@@ -29,6 +29,7 @@ import os
 
 import joblib
 import pandas as pd
+import numpy as np
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
@@ -73,7 +74,7 @@ CORS(app, resources={r"/api/*": {"origins": [
 MODEL_DIR = "./model"
 
 regression_pipeline = joblib.load(
-    os.path.join(MODEL_DIR, "lasso_regressor_for_sme_revenue.joblib")
+    os.path.join(MODEL_DIR, "elasticnet_regressor_for_property_rent.joblib")
 )
 
 classification_pipeline = joblib.load(
@@ -95,56 +96,39 @@ sku_lookup = arm_artifact["sku_lookup"]
 print("All the four artifacts have been loaded. The API is ready.")
 
 
-# 1. REGRESSION -- predict monthly revenue (KES) for an SME
+# 1. REGRESSION -- predict monthly rent (KES) for a Nairobi-area property
 
 # Sample request (cURL):
-#   curl -X POST http://127.0.0.1:5000/api/v1/models/sme-revenue-regressor/predictions \
+#   curl -X POST http://127.0.0.1:5000/api/v1/models/property-rent-regressor/predictions \
 #        -H "Content-Type: application/json" \
-#        -d '{"sector": "Technology", "county": "Nairobi", "quarter": "Q3",
-#             "business_age_years": 4.5, "num_employees": 12,
-#             "owner_education_level": "Secondary",
-#             "monthly_marketing_spend_kes": 45000,
-#             "avg_daily_foot_traffic": null,
-#             "online_presence_score": 78.0, "loan_amount_kes": 250000,
-#             "interest_rate_pct": 14.5, "inflation_rate_pct": 6.5,
-#             "competitor_density": 5, "customer_satisfaction_score": 4.2}'
+#        -d '{"property_type": "Apartment", "neighborhood": "Kilimani",
+#             "furnishing_status": "Fully Furnished",
+#             "property_age_years": 5.0, "size_sqm": 100.0,
+#             "num_bedrooms": 3, "num_bathrooms": 2,
+#             "distance_to_cbd_km": 8.0, "service_charge_kes": 5000,
+#             "garage_size_sqm": 15.0, "security_rating": 4.0,
+#             "amenities_score": 80.0, "nearby_schools_count": 4}'
 #
-# Sample request (PowerShell):
-#   Invoke-RestMethod -Method Post `
-#     -Uri "http://127.0.0.1:5000/api/v1/models/sme-revenue-regressor/predictions" `
-#     -ContentType "application/json" `
-#     -Body (@{sector="Technology"; county="Nairobi"; quarter="Q3";
-#              business_age_years=4.5; num_employees=12;
-#              owner_education_level="Secondary";
-#              monthly_marketing_spend_kes=45000; avg_daily_foot_traffic=$null;
-#              online_presence_score=78.0; loan_amount_kes=250000;
-#              interest_rate_pct=14.5; inflation_rate_pct=6.5;
-#              competitor_density=5; customer_satisfaction_score=4.2} | ConvertTo-Json)
+# Expected response (matches the regression notebook):
+#   {"predicted_monthly_rent_kes": 125400.21, ...}
 #
-# Note: avg_daily_foot_traffic is deliberately null for a Technology-sector
-# business (fully online -- foot traffic is structurally not applicable, not
-# missing at random). The pipeline's own imputer handles the null value; nothing
-# in this file needs to know that rule.
-@app.route("/api/v1/models/sme-revenue-regressor/predictions", methods=["POST"])
-def predict_revenue():
+# Note: garage_size_sqm and security_rating may be sent as null. The
+# pipeline's median imputer handles them; this route needs no special code.
+@app.route("/api/v1/models/property-rent-regressor/predictions", methods=["POST"])
+def predict_rent():
     payload = request.get_json()
 
-    # Build a one-row DataFrame straight from the JSON body. No manual
-    # label-encoding, no manual date parsing, no manual column reordering, etc. --
-    # the pipeline's ColumnTransformer already knows which columns it expects
-    # and how to preprocess each one.
+    # One-row DataFrame straight from the JSON body -- the pipeline's
+    # ColumnTransformer handles imputation, scaling and one-hot encoding.
     input_row = pd.DataFrame([payload])
 
-    predicted_log_revenue = regression_pipeline.predict(input_row)[0]
-    # The pipeline was trained on log1p(revenue) because revenue was
-    # right-skewed; we invert that single transformation here to report the
-    # predictions in KES.
-    import numpy as np
-    predicted_revenue_kes = float(np.expm1(predicted_log_revenue))
+    predicted_log_rent = regression_pipeline.predict(input_row)[0]
+    # The pipeline was trained on log1p(rent); invert it to report KES.
+    predicted_rent_kes = float(np.expm1(predicted_log_rent))
 
     return jsonify({
-        "predicted_monthly_revenue_kes": round(predicted_revenue_kes, 2),
-        "model": "Lasso Regressor",
+        "predicted_monthly_rent_kes": round(predicted_rent_kes, 2),
+        "model": "ElasticNet Regressor (tuned, alpha=0.001, l1_ratio=0.8)",
     })
 
 
