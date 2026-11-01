@@ -1,0 +1,161 @@
+{
+  "info": {
+    "_postman_id": "6921fc42-8867-41e2-8293-018444f64c10",
+    "name": "Serving ML Models - All 4 Endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51179005"
+  },
+  "item": [
+    {
+      "name": "Regression",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"sector\": \"Technology\",\r\n    \"county\": \"Nairobi\",\r\n    \"quarter\": \"Q3\",\r\n    \"business_age_years\": 4.5,\r\n    \"num_employees\": 12,\r\n    \"owner_education_level\": \"Secondary\",\r\n    \"monthly_marketing_spend_kes\": 45000,\r\n    \"avg_daily_foot_traffic\": null,\r\n    \"online_presence_score\": 78.0,\r\n    \"loan_amount_kes\": 250000,\r\n    \"interest_rate_pct\": 14.5,\r\n    \"inflation_rate_pct\": 6.5,\r\n    \"competitor_density\": 5,\r\n    \"customer_satisfaction_score\": 4.2\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/models/sme-revenue-regressor/predictions",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "models",
+            "sme-revenue-regressor",
+            "predictions"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Classification",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"department\": \"Operations\",\r\n    \"job_role_level\": \"Junior\",\r\n    \"education_level\": \"Diploma\",\r\n    \"performance_rating\": \"Low\",\r\n    \"years_at_company\": 1.5,\r\n    \"years_since_last_promotion\": 6.0,\r\n    \"monthly_salary_kes\": 25000,\r\n    \"overtime_hours_per_month\": 45.0,\r\n    \"job_satisfaction_score\": 1.5,\r\n    \"work_life_balance_score\": null,\r\n    \"distance_from_home_km\": 35.0,\r\n    \"num_companies_worked_previously\": 6,\r\n    \"remote_work_days_per_week\": 0,\r\n    \"bonus_amount_kes\": null\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/models/sme-credit-risk-classifier/predictions",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "models",
+            "sme-credit-risk-classifier",
+            "predictions"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Clustering",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"Age\": 27, \"Annual Income (k$)\": 45, \"Spending Score (1-100)\": 72}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/models/mall-customer-segmenter/predictions",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "models",
+            "mall-customer-segmenter",
+            "predictions"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Recommender",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"cart\": [\"H06\", \"H07\"]}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/models/ecommerce-recommender/predictions",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "models",
+            "ecommerce-recommender",
+            "predictions"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          "// Every request in this collection should return HTTP 200\r",
+          "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": ""
+    }
+  ]
+}

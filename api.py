@@ -77,9 +77,13 @@ regression_pipeline = joblib.load(
     os.path.join(MODEL_DIR, "elasticnet_regressor_for_property_rent.joblib")
 )
 
+# Our group's tuned Logistic Regression pipeline for employee attrition
+# (preprocessing + SMOTE + model), saved in the Classification lab.
+# It is loaded once at startup -- never retrained here.
 classification_pipeline = joblib.load(
-    os.path.join(MODEL_DIR, "svc_classifier_for_sme_credit_risk.joblib")
+    os.path.join(MODEL_DIR, "employee_attrition_model.pkl")
 )
+
 
 clustering_artifact = joblib.load(
     os.path.join(MODEL_DIR, "kmeans_mall_customer_segmentation.joblib")
@@ -132,42 +136,55 @@ def predict_rent():
     })
 
 
-# 2. CLASSIFICATION -- predict SME credit risk category (Low/Medium/High)
+# 2. CLASSIFICATION -- predict employee attrition (Yes = likely to leave, No = likely to stay)
 
 # Sample request (cURL):
 #   curl -X POST http://127.0.0.1:5000/api/v1/models/sme-credit-risk-classifier/predictions \
 #        -H "Content-Type: application/json" \
-#        -d '{"sector": "Retail", "county": "Nairobi", "quarter": "Q2",
-#             "loan_purpose": "Working Capital", "owner_education_level": "Secondary",
-#             "business_age_years": 2.1, "num_employees": 4,
-#             "monthly_revenue_kes": 850000, "loan_amount_kes": 150000,
-#             "loan_term_months": 12, "interest_rate_pct": 16.5,
-#             "collateral_value_kes": null, "debt_to_income_ratio": 0.62,
-#             "credit_score": 590, "num_previous_loans": 1,
-#             "missed_payments_count": 3, "online_presence_score": 40.0,
-#             "customer_satisfaction_score": 3.4, "competitor_density": 6}'
+#        -d '{"department": "Operations", "job_role_level": "Junior",
+#             "education_level": "Diploma", "performance_rating": "Low",
+#             "years_at_company": 1.5, "years_since_last_promotion": 6.0,
+#             "monthly_salary_kes": 25000, "overtime_hours_per_month": 45.0,
+#             "job_satisfaction_score": 1.5, "work_life_balance_score": null,
+#             "distance_from_home_km": 35.0, "num_companies_worked_previously": 6,
+#             "remote_work_days_per_week": 0, "bonus_amount_kes": null}'
 #
-#
-# Note: collateral_value_kes is null here because "Working Capital" loans are
-# more often unsecured (structural missingness, not missing at random) --
-# again, the pipeline's imputer + missingness indicator already handles this
-# internally; this route does not need special code for it.
+# Note: missing values are sent as null (e.g. an employee with no bonus). The
+# pipeline's own median imputer fills them in, so this route needs no special
+# code for missing data. The ordinal columns only accept the categories the
+# model was trained on:
+#   education_level:    Diploma, Bachelor's, Master's, PhD
+#   performance_rating: Low, Average, High, Outstanding
 @app.route("/api/v1/models/sme-credit-risk-classifier/predictions", methods=["POST"])
-def predict_credit_risk():
-    payload = request.get_json()
+def predict_employee_attrition():
+    # silent=True returns None instead of crashing if the body is not valid JSON
+    payload = request.get_json(silent=True)
+    if not payload:
+        return jsonify({"error": "Send the employee's details as a JSON body."}), 400
+
+    # Build a one-row DataFrame straight from the JSON body. The pipeline's
+    # ColumnTransformer already knows how to impute, scale, one-hot encode and
+    # ordinal-encode each column.
     input_row = pd.DataFrame([payload])
 
-    predicted_class = classification_pipeline.predict(input_row)[0]
-    predicted_probabilities = classification_pipeline.predict_proba(input_row)[0]
-    class_labels = classification_pipeline.named_steps["model"].classes_
+    try:
+        predicted_class = classification_pipeline.predict(input_row)[0]
+        predicted_probabilities = classification_pipeline.predict_proba(input_row)[0]
+    except (ValueError, KeyError) as error:
+        # e.g. a missing column, or an education_level/performance_rating value
+        # the model never saw during training
+        return jsonify({"error": f"Invalid input: {error}"}), 400
+
+    # The labels the model was trained on, in the same order as the probabilities: ["No", "Yes"]
+    class_labels = classification_pipeline.classes_
 
     return jsonify({
-        "predicted_credit_risk_category": str(predicted_class),
+        "predicted_attrition": str(predicted_class),
         "class_probabilities": {
             str(label): round(float(prob), 4)
             for label, prob in zip(class_labels, predicted_probabilities)
         },
-        "model": "Support Vector Classifier (tuned, SMOTE-resampled at training only)",
+        "model": "Logistic Regression (tuned, SMOTE-resampled at training only)",
     })
 
 
