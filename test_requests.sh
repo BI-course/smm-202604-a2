@@ -53,7 +53,7 @@ call "Regression" "/api/v1/models/sme-revenue-regressor/predictions" '{
 }'
 
 # 2. Classification (Member 2) -- employee attrition
-call "Classification" "/api/v1/models/sme-credit-risk-classifier/predictions" '{
+call "Classification" "/api/v1/models/employee-attrition-classifier/predictions" '{
   "department": "Operations", "job_role_level": "Junior",
   "education_level": "Diploma", "performance_rating": "Low",
   "years_at_company": 1.5, "years_since_last_promotion": 6.0,

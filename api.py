@@ -81,7 +81,7 @@ regression_pipeline = joblib.load(
 # (preprocessing + SMOTE + model), saved in the Classification lab.
 # It is loaded once at startup -- never retrained here.
 classification_pipeline = joblib.load(
-    os.path.join(MODEL_DIR, "employee_attrition_model.pkl")
+    os.path.join(MODEL_DIR, "employee_attrition_model.joblib")
 )
 
 
@@ -149,7 +149,7 @@ def predict_rent():
 # 2. CLASSIFICATION -- predict employee attrition (Yes = likely to leave, No = likely to stay)
 
 # Sample request (cURL):
-#   curl -X POST http://127.0.0.1:5000/api/v1/models/sme-credit-risk-classifier/predictions \
+#   curl -X POST http://127.0.0.1:5000/api/v1/models/employee-attrition-classifier/predictions \
 #        -H "Content-Type: application/json" \
 #        -d '{"department": "Operations", "job_role_level": "Junior",
 #             "education_level": "Diploma", "performance_rating": "Low",
@@ -165,7 +165,7 @@ def predict_rent():
 # model was trained on:
 #   education_level:    Diploma, Bachelor's, Master's, PhD
 #   performance_rating: Low, Average, High, Outstanding
-@app.route("/api/v1/models/sme-credit-risk-classifier/predictions", methods=["POST"])
+@app.route("/api/v1/models/employee-attrition-classifier/predictions", methods=["POST"])
 def predict_employee_attrition():
     # silent=True returns None instead of crashing if the body is not valid JSON
     payload = request.get_json(silent=True)
