@@ -122,7 +122,18 @@ print("All the four artifacts have been loaded. The API is ready.")
 #             "distance_to_cbd_km": 8.0, "service_charge_kes": 5000,
 #             "garage_size_sqm": 15.0, "security_rating": 4.0,
 #             "amenities_score": 80.0, "nearby_schools_count": 4}'
-#
+
+# Sample request nginx (cURL):
+#   curl -X POST https://127.0.0.1:443/api/v1/models/property-rent-regressor/predictions \
+#        -k -H "Content-Type: application/json" \
+#        -d '{"property_type": "Apartment", "neighborhood": "Kilimani",
+#             "furnishing_status": "Fully Furnished",
+#             "property_age_years": 5.0, "size_sqm": 100.0,
+#             "num_bedrooms": 3, "num_bathrooms": 2,
+#             "distance_to_cbd_km": 8.0, "service_charge_kes": 5000,
+#             "garage_size_sqm": 15.0, "security_rating": 4.0,
+#             "amenities_score": 80.0, "nearby_schools_count": 4}'
+
 # Expected response (matches the regression notebook):
 #   {"predicted_monthly_rent_kes": 125400.21, ...}
 #
@@ -158,7 +169,18 @@ def predict_rent():
 #             "job_satisfaction_score": 1.5, "work_life_balance_score": null,
 #             "distance_from_home_km": 35.0, "num_companies_worked_previously": 6,
 #             "remote_work_days_per_week": 0, "bonus_amount_kes": null}'
-#
+
+# Sample request nginx (cURL):
+#   curl -X POST https://127.0.0.1:443/api/v1/models/employee-attrition-classifier/predictions \
+#        -k -H "Content-Type: application/json" \
+#        -d '{"department": "Operations", "job_role_level": "Junior",
+#             "education_level": "Diploma", "performance_rating": "Low",
+#             "years_at_company": 1.5, "years_since_last_promotion": 6.0,
+#             "monthly_salary_kes": 25000, "overtime_hours_per_month": 45.0,
+#             "job_satisfaction_score": 1.5, "work_life_balance_score": null,
+#             "distance_from_home_km": 35.0, "num_companies_worked_previously": 6,
+#             "remote_work_days_per_week": 0, "bonus_amount_kes": null}'
+
 # Note: missing values are sent as null (e.g. an employee with no bonus). The
 # pipeline's own median imputer fills them in, so this route needs no special
 # code for missing data. The ordinal columns only accept the categories the
@@ -204,7 +226,12 @@ def predict_employee_attrition():
 #    curl -X POST http://127.0.0.1:5000/api/v1/models/retail-store-segmenter/predictions \
 #         -H "Content-Type: application/json" \
 #         -d '{"monthly_revenue_kes": 620000, "daily_foot_traffic": 610, "staff_count": 7, "store_size_sqm": 210, "avg_basket_size_kes": 55}'
-#
+
+#  Sample request nginx (cURL):
+#    curl -X POST https://127.0.0.1:443/api/v1/models/retail-store-segmenter/predictions \
+#         -k -H "Content-Type: application/json" \
+#         -d '{"monthly_revenue_kes": 620000, "daily_foot_traffic": 610, "staff_count": 7, "store_size_sqm": 210, "avg_basket_size_kes": 55}'
+
 #  The imputer handles missing values, the scaler standardizes the
 #  five numeric features, and K-Means assigns the store to a cluster.
 #  These are the same preprocessing and clustering objects saved
@@ -259,7 +286,16 @@ def predict_store_segment():
 #   curl -X POST http://127.0.0.1:5000/api/v1/models/ecommerce-recommender/predictions \
 #        -H "Content-Type: application/json" \
 #        -d '{"cart": ["P04", "P01"]}'
+
+# Sample requests nginx (cURL):
+#   curl -X POST https://127.0.0.1:443/api/v1/models/ecommerce-recommender/predictions \
+#        -k -H "Content-Type: application/json" \
+#        -d '{"cart": ["H06", "H07"]}'
 #
+#   curl -X POST https://127.0.0.1:443/api/v1/models/ecommerce-recommender/predictions \
+#        -k -H "Content-Type: application/json" \
+#        -d '{"cart": ["P04", "P01"]}'
+
 # Note: there is no scikit-learn ".predict()" here -- the mined association
 # rules were precomputed into a lookup dictionary
 # (antecedent SKU-set -> ranked candidate consequents)
