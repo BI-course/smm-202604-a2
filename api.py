@@ -102,10 +102,10 @@ clustering_features = [
 ]
 
 arm_artifact = joblib.load(
-    os.path.join(MODEL_DIR, "apriori_recommendation_rules.joblib")
+    os.path.join(MODEL_DIR, "apriori_music_recommendation_rules.joblib")
 )
 recommendation_lookup = arm_artifact["recommendation_lookup"]
-sku_lookup = arm_artifact["sku_lookup"]
+track_lookup = arm_artifact["track_lookup"]
 
 print("All the four artifacts have been loaded. The API is ready.")
 
@@ -269,35 +269,40 @@ def predict_store_segment():
 # for the rules again.
 @app.route("/api/v1/models/ecommerce-recommender/predictions", methods=["POST"])
 def recommend_products():
-    payload = request.get_json()
-    cart = set(payload.get("cart", []))
-    top_n = int(payload.get("top_n", 3))
+    payload = request.get_json(silent=True)
+    if not payload or not isinstance(payload.get("cart"), list) or not payload["cart"]:
+        return jsonify({"error": "Provide a non-empty list of track IDs under 'cart'"}), 400
+    cart = set(payload["cart"])
+    try:
+        top_n = int(payload.get("top_n", 3))
+    except (ValueError, TypeError):
+        return jsonify({"error": "'top_n' must be an integer"}), 400
 
     candidates = {}
     for antecedent, consequent_list in recommendation_lookup.items():
         if antecedent.issubset(cart):
-            for sku, confidence, lift in consequent_list:
-                if sku not in cart:
-                    if sku not in candidates or confidence > candidates[sku][0]:
-                        candidates[sku] = (confidence, lift)
+            for track_id, confidence, lift in consequent_list:
+                if track_id not in cart:
+                    if track_id not in candidates or confidence > candidates[track_id][0]:
+                        candidates[track_id] = (confidence, lift)
 
-    ranked = sorted(candidates.items(), key=lambda item: item[1][0], reverse=True)[:top_n]
-    recommendations = [
-        {
-            "sku": str(sku),
-            "product_name": sku_lookup.loc[sku, "product_name"],
+    ranked = sorted(candidates.items(), key=lambda x: x[1][0], reverse=True)[:top_n]
+    recommendations = []
+    for track_id, (confidence, lift) in ranked:
+        known = track_id in track_lookup.index
+        recommendations.append({
+            "track_id": str(track_id),
+            "track_name": track_lookup.loc[track_id, "item_name"] if known else None,
+            "category": track_lookup.loc[track_id, "category"] if known else None,
             "confidence": round(float(confidence), 3),
             "lift": round(float(lift), 2),
-        }
-        for sku, (confidence, lift) in ranked
-    ]
+        })
 
     return jsonify({
         "cart": sorted(cart),
         "recommendations": recommendations,
-        "model": "Apriori association rules, cleaned + precomputed lookup",
+        "model": "Apriori association rules (music), precomputed lookup",
     })
-
 
 # -----------------------------------------------------------------------
 # Entry point
