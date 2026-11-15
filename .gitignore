@@ -213,3 +213,5 @@ __marimo__/
 /roughwork
 /.devcontainer
 /lab_submission_ANSWERS
+container-volumes/nginx/certs/
+.env
