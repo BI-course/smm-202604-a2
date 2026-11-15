@@ -267,7 +267,7 @@ def predict_store_segment():
 # endpoint performs the exact same lookup+rank step a production recommender
 # microservice would perform on every incoming request; it does not mine
 # for the rules again.
-@app.route("/api/v1/models/ecommerce-recommender/predictions", methods=["POST"])
+@app.route("/api/v1/models/music-recommender/predictions", methods=["POST"])
 def recommend_products():
     payload = request.get_json(silent=True)
     if not payload or not isinstance(payload.get("cart"), list) or not payload["cart"]:
