@@ -7,10 +7,10 @@
 **Member 1:**
 
 | **Details**                                                                                                                           | **Comment** |
-|:--------------------------------------------------------------------------------------------------------------------------------------|:------------|
-| **Student ID**                                                                                                                        |             |
-| **Name**                                                                                                                              |             |
-| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |             |
+|:--------------------------------------------------------------------------------------------------------------------------------------|:- -----------|
+| **Student ID**                                                                                                                       |    161136       |
+| **Name**                                                                                                                              |       Abdullahi Samiya Issack        |
+| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |  https://github.com/BI-course/smm-202604-a2/tree/samiya-regression     <br/>   i worked on the regression endpoint and merging group member's branches. this required me to test each endpoint individually before merging. it helped me identify errors early. i deployed render as well   |
 
 **Member 2:**
 
