@@ -266,7 +266,7 @@
         </div>
       </div>
 
-      <button type="submit" id="submitBtn">Predict Property Rent</button>
+      <button type="submit" id="submitBtn">Predict Property Monthly Rent</button>
     </form>
 
     <div id="result"></div>
@@ -327,14 +327,14 @@
         result.className = "show ok";
         result.innerHTML =
           `Model: ${data.model}` +
-          `<div class="figure">KES ${Number(data.predicted_monthly_revenue_kes).toLocaleString()}</div>`;
+          `<div class="figure">KES ${Number(data.predicted_monthly_rent_kes).toLocaleString()}</div>`;
       } catch (err) {
         result.className = "show err";
         result.textContent = "Request failed: " + err.message +
           " (is api.py running on http://127.0.0.1:5000 ?)";
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = "Predict Monthly Revenue";
+        submitBtn.textContent = "Predict Property Monthly Rent";
       }
     });
   </script>

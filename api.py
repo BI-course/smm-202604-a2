@@ -149,10 +149,10 @@ def predict_rent():
 
     predicted_log_rent = regression_pipeline.predict(input_row)[0]
     # The pipeline was trained on log1p(rent); invert it to report KES.
-    predicted_rent_kes = float(np.expm1(predicted_log_rent))
+    predicted_monthly_rent_kes = float(np.expm1(predicted_log_rent))
 
     return jsonify({
-        "predicted_monthly_rent_kes": round(predicted_rent_kes, 2),
+        "predicted_monthly_rent_kes": round(predicted_monthly_rent_kes, 2),
         "model": "ElasticNet Regressor (tuned, alpha=0.001, l1_ratio=0.8)",
     })
 
