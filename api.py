@@ -4,9 +4,9 @@ api.py
 A RESTish API, built with Flask, that serves FOUR machine learning artifacts
 produced in earlier labs:
 
-    1. Regression       -- SME monthly revenue prediction
-    2. Classification   -- SME credit risk category
-    3. Clustering       -- Retail store segment assignment
+    1. Regression       -- Property monthly rent prediction
+    2. Classification   -- Employee Attrition Classifier
+    3. Clustering       -- Retail Store Segmentor
     4. Association Rule -- Product recommendation from a cart
        Mining (ARM)
 
