@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Group A2 Models</title>
+<style>
+  :root {
+    --bg: #f3f4f6;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #d1d5db;
+    --accent: #4338ca;
+    --error-bg: #fef2f2;
+    --error: #b91c1c;
+    --ok-bg: #ecfdf5;
+    --ok: #047857;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    background: linear-gradient(135deg, #4338ca, #7c3aed);
+    color: #fff;
+    padding: 32px 16px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 6px; font-size: 24px; }
+  header p { margin: 0; opacity: 0.9; font-size: 14px; }
+  main { max-width: 860px; margin: 24px auto 64px; padding: 0 16px; }
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .api-base { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 14px; }
+  .api-base input { flex: 1; min-width: 220px; }
+  nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  nav button {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  nav button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  section[hidden] { display: none; }
+  h2 { margin: 0 0 4px; font-size: 18px; }
+  .hint { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 16px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  label .opt { font-weight: 400; color: var(--muted); }
+  input, select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+    color: var(--text);
+  }
+  input.invalid, select.invalid { border-color: var(--error); background: var(--error-bg); }
+  .tracks { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 6px; font-size: 14px; }
+  .tracks label { font-weight: 400; display: flex; gap: 8px; align-items: center; margin: 0; }
+  .tracks input { width: auto; }
+  button.submit {
+    margin-top: 16px;
+    background: var(--accent);
+    color: #fff;
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  button.submit:disabled { opacity: 0.6; cursor: wait; }
+  .result { margin-top: 16px; padding: 12px 14px; border-radius: 8px; font-size: 14px; white-space: pre-line; }
+  .result:empty { display: none; }
+  .result.ok { background: var(--ok-bg); color: var(--ok); }
+  .result.error { background: var(--error-bg); color: var(--error); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Group A2 &ndash; Model Demos</h1>
+  <p>Four models served by one Flask API: rent, attrition, store segments and music recommendations.</p>
+</header>
+
+<main>
+  <div class="card api-base">
+    <label for="api-base" style="margin:0">API base URL</label>
+    <input id="api-base" type="url">
+  </div>
+
+  <nav role="tablist">
+    <button role="tab" data-tab="regression" aria-selected="true">Property Rent</button>
+    <button role="tab" data-tab="classification" aria-selected="false">Employee Attrition</button>
+    <button role="tab" data-tab="clustering" aria-selected="false">Store Segment</button>
+    <button role="tab" data-tab="recommender" aria-selected="false">Music Recommender</button>
+  </nav>
+
+  <!-- Each form's fields are generated from the MODELS definition below. -->
+  <section class="card" id="regression"></section>
+  <section class="card" id="classification" hidden></section>
+  <section class="card" id="clustering" hidden></section>
+  <section class="card" id="recommender" hidden></section>
+</main>
+
+<script>
+// -----------------------------------------------------------------------
+// API base URL: when this page is served by Nginx (Docker), call the API on
+// the same origin; when it is opened straight from disk (file://), call the
+// public Render deployment instead. Either can be changed in the box above.
+// -----------------------------------------------------------------------
+const RENDER_URL = "https://smm-202604-a2-api.onrender.com";
+const apiBaseInput = document.getElementById("api-base");
+apiBaseInput.value = location.protocol.startsWith("http") ? location.origin : RENDER_URL;
+
+const MODELS = {
+  regression: {
+    title: "Property Rent Regressor",
+    hint: "Predicts the monthly rent (KES) of a Nairobi-area property.",
+    path: "/api/v1/models/property-rent-regressor/predictions",
+    fields: [
+      { name: "property_type", type: "select", options: ["Apartment", "Bungalow", "Maisonette", "Townhouse"], value: "Apartment" },
+      { name: "neighborhood", type: "text", value: "Kilimani" },
+      { name: "furnishing_status", type: "text", value: "Fully Furnished" },
+      { name: "property_age_years", value: 5.0 },
+      { name: "size_sqm", value: 100.0 },
+      { name: "num_bedrooms", value: 3 },
+      { name: "num_bathrooms", value: 2 },
+      { name: "distance_to_cbd_km", value: 8.0 },
+      { name: "service_charge_kes", value: 5000 },
+      { name: "garage_size_sqm", value: 15.0, optional: true },
+      { name: "security_rating", value: 4.0, optional: true },
+      { name: "amenities_score", value: 80.0 },
+      { name: "nearby_schools_count", value: 4 },
+    ],
+    show: (d) => `Predicted monthly rent: KES ${d.predicted_monthly_rent_kes.toLocaleString(undefined, { minimumFractionDigits: 2 })}\nModel: ${d.model}`,
+  },
+  classification: {
+    title: "Employee Attrition Classifier",
+    hint: "Predicts whether an employee is likely to leave.",
+    path: "/api/v1/models/employee-attrition-classifier/predictions",
+    fields: [
+      { name: "department", type: "text", value: "Operations" },
+      { name: "job_role_level", type: "text", value: "Junior" },
+      { name: "education_level", type: "text", value: "Diploma" },
+      { name: "performance_rating", type: "text", value: "Low" },
+      { name: "years_at_company", value: 1.5 },
+      { name: "years_since_last_promotion", value: 6.0 },
+      { name: "monthly_salary_kes", value: 25000 },
+      { name: "overtime_hours_per_month", value: 45.0 },
+      { name: "job_satisfaction_score", value: 1.5 },
+      { name: "work_life_balance_score", value: "", optional: true },
+      { name: "distance_from_home_km", value: 35.0 },
+      { name: "num_companies_worked_previously", value: 6 },
+      { name: "remote_work_days_per_week", value: 0 },
+      { name: "bonus_amount_kes", value: "", optional: true },
+    ],
+    show: (d) => {
+      const probs = Object.entries(d.class_probabilities || {})
+        .map(([label, p]) => `  ${label}: ${(p * 100).toFixed(1)}%`).join("\n");
+      return `Will the employee leave? ${d.predicted_attrition}\n${probs}\nModel: ${d.model}`;
+    },
+  },
+  clustering: {
+    title: "Retail Store Segmenter",
+    hint: "Assigns a retail store to one of the K-Means segments.",
+    path: "/api/v1/models/retail-store-segmenter/predictions",
+    fields: [
+      { name: "monthly_revenue_kes", value: 620000 },
+      { name: "daily_foot_traffic", value: 610 },
+      { name: "staff_count", value: 7 },
+      { name: "store_size_sqm", value: 210 },
+      { name: "avg_basket_size_kes", value: 55 },
+    ],
+    show: (d) => `Assigned segment: Cluster ${d.assigned_cluster}\nModel: ${d.model}`,
+  },
+};
+
+const TRACKS = {
+  M01: "Workout Anthem", M02: "Pump It Up", M03: "Cardio Beats", M04: "Study Focus 1",
+  M05: "Study Focus 2", M06: "Rain Sounds", M07: "Deep Sleep", M08: "Sunday Worship 1",
+  M09: "Sunday Worship 2", M10: "Praise Medley", M11: "Heartbreak Ballad", M12: "Love Story",
+  M13: "Hip Hop Anthem", M14: "Street Beats", M15: "Amapiano Vibes", M16: "Gengetone Hit",
+};
+
+const pretty = (name) => name.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+
+function fieldHtml(key, f) {
+  const id = `${key}-${f.name}`;
+  const label = `<label for="${id}">${pretty(f.name)}${f.optional ? ' <span class="opt">(optional)</span>' : ""}</label>`;
+  if (f.type === "select") {
+    const opts = f.options.map((o) => `<option${o === f.value ? " selected" : ""}>${o}</option>`).join("");
+    return `<div>${label}<select id="${id}" name="${f.name}">${opts}</select></div>`;
+  }
+  const type = f.type === "text" ? "text" : "number";
+  return `<div>${label}<input id="${id}" name="${f.name}" type="${type}" step="any" value="${f.value}"></div>`;
+}
+
+for (const [key, model] of Object.entries(MODELS)) {
+  document.getElementById(key).innerHTML = `
+    <h2>${model.title}</h2><p class="hint">${model.hint}</p>
+    <form novalidate><div class="grid">${model.fields.map((f) => fieldHtml(key, f)).join("")}</div>
+    <button class="submit" type="submit">Predict</button><div class="result" role="status"></div></form>`;
+}
+
+document.getElementById("recommender").innerHTML = `
+  <h2>Music Recommender</h2>
+  <p class="hint">Tick the tracks in a listening session (try M09 + M10, or M01 + M03).</p>
+  <form novalidate>
+    <div class="tracks">${Object.entries(TRACKS).map(([id, name]) =>
+      `<label><input type="checkbox" name="cart" value="${id}"${["M09", "M10"].includes(id) ? " checked" : ""}> ${id} &ndash; ${name}</label>`
+    ).join("")}</div>
+    <div style="max-width:220px;margin-top:12px"><label for="top-n">Top N recommendations</label>
+    <input id="top-n" name="top_n" type="number" min="1" max="10" value="3"></div>
+    <button class="submit" type="submit">Recommend</button><div class="result" role="status"></div>
+  </form>`;
+
+// -----------------------------------------------------------------------
+// Calling the API, with basic error handling for network and HTTP errors.
+// -----------------------------------------------------------------------
+async function callApi(path, payload) {
+  const base = apiBaseInput.value.trim().replace(/\/+$/, "");
+  if (!base) throw new Error("Enter the API base URL at the top of the page.");
+  let response;
+  try {
+    response = await fetch(base + path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    throw new Error(`Could not reach the API at ${base}. Is it running? (Render may take up to a minute to wake up.)`);
+  }
+  let data = null;
+  try { data = await response.json(); } catch (err) { /* not JSON, e.g. an HTML 404/500 page */ }
+  if (!response.ok) {
+    throw new Error((data && data.error) || `The API returned HTTP ${response.status}.`);
+  }
+  return data;
+}
+
+function showResult(box, text, ok) {
+  box.className = `result ${ok ? "ok" : "error"}`;
+  box.textContent = text;
+}
+
+async function submitWithFeedback(form, payloadOrError, path, show) {
+  const box = form.querySelector(".result");
+  const button = form.querySelector("button.submit");
+  if (typeof payloadOrError === "string") return showResult(box, payloadOrError, false);
+  button.disabled = true;
+  showResult(box, "Predicting...", true);
+  try {
+    showResult(box, show(await callApi(path, payloadOrError)), true);
+  } catch (err) {
+    showResult(box, err.message, false);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+// Basic error handling for missing input: every non-optional field must be
+// filled in before anything is sent; optional blanks are sent as null.
+for (const [key, model] of Object.entries(MODELS)) {
+  const form = document.querySelector(`#${key} form`);
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const payload = {};
+    const missing = [];
+    for (const f of model.fields) {
+      const input = form.elements[f.name];
+      const raw = input.value.trim();
+      input.classList.toggle("invalid", raw === "" && !f.optional);
+      if (raw === "") {
+        if (!f.optional) missing.push(pretty(f.name));
+        payload[f.name] = null;
+      } else {
+        payload[f.name] = f.type ? raw : Number(raw);
+      }
+    }
+    const problem = missing.length ? `Please fill in: ${missing.join(", ")}` : payload;
+    submitWithFeedback(form, problem, model.path, model.show);
+  });
+}
+
+const recForm = document.querySelector("#recommender form");
+recForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const cart = [...recForm.querySelectorAll('input[name="cart"]:checked')].map((c) => c.value);
+  const topN = parseInt(recForm.elements.top_n.value, 10) || 3;
+  const problem = cart.length ? { cart, top_n: topN } : "Tick at least one track for the listening session.";
+  submitWithFeedback(recForm, problem, "/api/v1/models/music-recommender/predictions", (d) =>
+    d.recommendations.length
+      ? d.recommendations.map((r) =>
+          `${r.track_name} (${r.track_id}, ${r.category}) - confidence ${(r.confidence * 100).toFixed(1)}%, lift ${r.lift}`
+        ).join("\n")
+      : "No recommendations for this session - try M09 + M10, or M01 + M03."
+  );
+});
+
+// Tabs
+document.querySelectorAll("nav button").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll("nav button").forEach((t) => {
+      const selected = t === tab;
+      t.setAttribute("aria-selected", String(selected));
+      document.getElementById(t.dataset.tab).hidden = !selected;
+    });
+  });
+});
+</script>
+</body>
+</html>
