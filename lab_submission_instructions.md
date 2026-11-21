@@ -6,11 +6,11 @@
 
 **Member 1:**
 
-| **Details**                                                                                                                           | **Comment** |
-|:--------------------------------------------------------------------------------------------------------------------------------------|:- -----------|
-| **Student ID**                                                                                                                       |    161136       |
-| **Name**                                                                                                                              |       Abdullahi Samiya Issack        |
-| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |  https://github.com/BI-course/smm-202604-a2/tree/samiya-regression     <br/>   i worked on the regression endpoint and merging group member's branches. this required me to test each endpoint individually before merging. it helped me identify errors early. i deployed render as well   |
+| **Details**                                                                                                                           | **Comment**             |
+|:--------------------------------------------------------------------------------------------------------------------------------------|:------------------------|
+| **Student ID**                                                                                                                        | 161136                  |
+| **Name**                                                                                                                              | Abdullahi Samiya Issack |
+| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |         **Branches:** [samiya-regression](https://github.com/BI-course/smm-202604-a2/tree/samiya-regression) (regression endpoint) and [main](https://github.com/BI-course/smm-202604-a2/tree/main) (merging, deployment and Advanced-tier apps).<br/><br/>**What I did:** Served our group's tuned ElasticNet property-rent model through the regression endpoint and confirmed it matches the notebook's prediction (KES 125,400.21). Fixed the scikit-learn version mismatch (models saved with 1.6.1) by pinning it for every deployment. Merged all members' branches into `main`, testing all four endpoints after each merge. Got Docker + Gunicorn + Nginx working by running both compose files together and generating the self-signed certificate. Deployed the API to Render. For the Advanced tier, deployed the Gradio app to Hugging Face Spaces and the Streamlit app to Streamlit Community Cloud (one tab per model, both reusing the same `api.py` and model files), and added an HTML/CSS/JS page with error handling for missing input.<br/><br/>**What I learned:** A saved scikit-learn Pipeline carries its own preprocessing, so the API only has to reverse the log transform. Models must be loaded with the same scikit-learn version they were saved with, and every platform needs that version pinned. Free platforms also pick their own Python version (Streamlit chose 3.14, which had no ready-made scikit-learn 1.6.1), so it has to be set explicitly. Reusing one `api.py` everywhere keeps local, Docker, Render, Hugging Face and Streamlit giving identical answers.                 |
 
 **Member 2:**
 
@@ -70,9 +70,9 @@ Fill in only the rows that apply to your chosen difficulty level (see Part C bel
 
 | **Deployment target**                             | **URL** |
 |:--------------------------------------------------|:--------|
-| Render (the full `api.py`, all endpoints)         |         |
-| Hugging Face Space (Gradio, one tab per model)    |         |
-| Streamlit Community Cloud app (one tab per model) |         |
+| Render (the full `api.py`, all endpoints)         |     https://smm-202604-a2-api.onrender.com<br/>POST `/api/v1/models/property-rent-regressor/predictions`<br/>POST `/api/v1/models/employee-attrition-classifier/predictions`<br/>POST `/api/v1/models/retail-store-segmenter/predictions`<br/>POST `/api/v1/models/music-recommender/predictions`    |
+| Hugging Face Space (Gradio, one tab per model)    | https://huggingface.co/spaces/Samiwami/smm-a2-models        |
+| Streamlit Community Cloud app (one tab per model) | https://202604-smm-a2.streamlit.app/        |
 
 ---
 
