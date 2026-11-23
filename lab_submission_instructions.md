@@ -24,10 +24,10 @@
 
 | **Details**                                                                                                                           | **Comment** |
 |:--------------------------------------------------------------------------------------------------------------------------------------|:------------|
-| **Student ID**                                                                                                                        |             |
-| **Name**                                                                                                                              |             |
+| **Student ID**      153527                                                                                                            |             |
+| **Name**       Veronicah Mbuvi                                                                                                        |             |
 | **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |             |
-
+https://github.com/BI-course/smm-202604-a2/tree/veronicah-clustering I handled the Retail Store Segmentation part of the lab. I integrated our trained K-Means retail store segmentation model into api.py so that users can submit details about a retail store and receive the cluster it belongs to. I laso loaded the saved model together with its preprocessing components, including the imputer and scaler. I created a POST endpoint  that accepts five features: monthly revenue, daily foot traffic, staff count, store size and average basket size. I also added input validation to check for missing or invalid values and ensured that the API returns clear error messages instead of crashing. The endpoint returns the assigned cluster in JSON format.I learned how a trained machine learning model can be integrated into a Flask API and made accessible to other applications. I learned how to create POST endpoints, validate incoming JSON data and handle errors. 
 **Member 4:**
 
 | **Details**                                                                                                                           | **Comment** |
@@ -63,6 +63,7 @@ At minimum, the video must show, in one continuous walkthrough:
 Note that you are required to submit the link to the video and NOT the video itself. The video should NOT be uploaded to your repository—that would be a misuse of GitHub.
 
 **Link to the video:**
+https://youtu.be/JmS7e-HJIrU
 
 ## Public URLs
 
