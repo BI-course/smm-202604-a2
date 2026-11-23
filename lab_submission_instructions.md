@@ -40,9 +40,9 @@
 
 | **Details**                                                                                                                           | **Comment** |
 |:--------------------------------------------------------------------------------------------------------------------------------------|:------------|
-| **Student ID**                                                                                                                        |             |
-| **Name**                                                                                                                              |             |
-| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |             |
+| **Student ID**                                                                                                                        |    112806    |
+| **Name**                                                                                                                              | Waweru Casey |
+| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |   **Branch:** [feature/member5-nginx-docker](https://github.com/BI-course/smm-202604-a2/tree/feature/member5-nginx-docker) I was responsible for setting up the model's serving infrastructure. I contributed to setting up the api environment and hosting the model using nginx and docker. I learnt about api communication, debugging using developer tools, setting up services using docker compose, ssl certificates and reverse proxies using nginx. I learnt on the difference between training a model and deploying it for actual use. |
 
 ## Chosen Level of Difficulty
 
