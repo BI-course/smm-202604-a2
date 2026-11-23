@@ -32,9 +32,14 @@
 
 | **Details**                                                                                                                           | **Comment** |
 |:--------------------------------------------------------------------------------------------------------------------------------------|:------------|
-| **Student ID**                                                                                                                        |             |
-| **Name**                                                                                                                              |             |
-| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?** |             |
+| **Student ID**                                                                                                                        |      150209       |
+| **Name**                                                                                                                              |  Mungai Stacy           |
+| **What part of the lab did you personally<br/>contribute to (provide a link to the<br/>branch(es)), and what did you learn from it?**
+|  I was responsible for implementing the recommendation system using our group's Apriori association rules. I worked on integrating the saved association rules into api.py and developing the music recommender endpoint (/api/v1/models/music-recommender/predictions). I worked on the recommendation lookup logic to ensure that users could submit a music item and receive recommendations based on the learned association rules. I also worked on testing the endpoint to ensure that it returned recommendations in the correct JSON format.
+
+In addition to implementing the recommender endpoint, I was responsible for coordinating and recording the group's final demonstration video. The demonstration covers the Flask API running locally, the Docker environment using Gunicorn and Nginx, and the publicly deployed API on Render.
+
+ I learned how association rule mining can be integrated into a real-world recommendation system. I also gained a better understanding of how Apriori association rules identify relationships between items and how these relationships can be used to generate recommendations. Through this task, I improved my understanding of Flask API development, loading saved machine learning artifacts, handling user inputs and testing API endpoints. I also learned how to demonstrate and communicate a complete machine learning deployment workflow.           |
 
 **Member 5:**
 
